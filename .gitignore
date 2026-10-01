@@ -1,0 +1,9 @@
+.env
+__pycache__/
+.pytest_cache/
+.venv/
+results/demo/
+results/*_mock*.md
+results/*_mock*.csv
+*.pyc
+results/demo_http/

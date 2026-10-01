@@ -1,0 +1,49 @@
+# ChatEval configuration. Secrets live in .env, never here.
+llm:
+  provider: openai            # openai | gemini | huggingface | ollama | mock
+  temperature: 0              # judge determinism; non-zero is not recommended
+  openai:
+    chat_model: gpt-4o-mini   # set to the strongest judge you can afford, e.g. gpt-4o
+    embedding_model: text-embedding-3-small
+  gemini:
+    chat_model: gemini-2.0-flash
+    embedding_model: text-embedding-004
+  huggingface:
+    chat_model: mistralai/Mistral-7B-Instruct-v0.2
+    embedding_model: sentence-transformers/all-MiniLM-L6-v2
+  ollama:
+    chat_model: llama3.1
+    embedding_model: nomic-embed-text
+
+judge_runs: 1                 # >1 = repeat the judge, use the median, report the spread
+concurrency: 5                # questions processed in parallel
+timeout_s: 60
+
+thresholds:
+  similarity_pass: 0.75       # UNCALIBRATED default - calibrate on your labelled set
+  judge_pass: 0.7
+  review_margin: 0.1          # judge within +/- margin of judge_pass => human review
+  max_judge_spread: 0.25      # repeated judge runs disagreeing more than this => human review
+
+policy:
+  route_high_risk_passes_to_review: false   # true = every PASS on a high-risk topic is queued for a human
+  high_risk_keywords: [fee, charge, interest, rate, limit, eligib, age, complaint, fraud, deposit, protected, mortgage, loan, overdraft, regulat, advice]
+
+ci_gate:                      # used by `--gate`
+  min_pass_rate: 0.90
+  max_review_rate: 0.25
+  fail_on_high_risk_fail: true
+
+pricing:                      # USD per 1M tokens. Left blank on purpose: fill from your provider's CURRENT price list.
+  chat_input_per_1m_usd:
+  chat_output_per_1m_usd:
+  embedding_per_1m_usd:
+
+target:                       # shape of the chatbot HTTP API
+  request_field: question
+  response_field: answer
+
+provider_overrides:           # the offline mock embeddings are crude; they need a different similarity threshold
+  mock:
+    thresholds:
+      similarity_pass: 0.5
